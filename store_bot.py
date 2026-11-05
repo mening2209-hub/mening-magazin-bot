@@ -7,14 +7,14 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 # BotFather tokeningiz
 TOKEN = "9129111266:AAE_xfqt0rsQv6mbt85i8qZsAWWBIg1DkV8"
 
-# Sizning Telegram ID raqamingiz
+# Sizning Telegram ID raqamingiz (Admin)
 ADMIN_ID = 8788801606
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# Asosiy menyu
-main_menu = ReplyKeyboardMarkup(
+# 1. Odatiy mijozlar menyusi
+user_menu = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="🛍 Katalog"), KeyboardButton(text="🛒 Buyurtma berish")],
         [KeyboardButton(text="📞 Aloqa"), KeyboardButton(text="ℹ️ Biz haqimizda")]
@@ -22,15 +22,54 @@ main_menu = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
+# 2. Admin uchun maxsus boshqaruv menyusi
+admin_menu = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="📊 Statistika"), KeyboardButton(text="➕ Mahsulot qo'shish")],
+        [KeyboardButton(text="📢 Xabarnoma yuborish"), KeyboardButton(text="⚙️ Sozlamalar")]
+    ],
+    resize_keyboard=True
+)
+
 @dp.message(Command("start"))
 async def start_cmd(message: types.Message):
     print(f"DEBUG: {message.from_user.first_name} /start bosdi!")
-    await message.answer(
-        f"Assalomu alaykum, {message.from_user.first_name}!\n"
-        "Do'konimiz botiga xush kelibsiz. Kerakli bo'limni tanlang:",
-        reply_markup=main_menu
-    )
+    
+    # Admin ekanligini tekshirish
+    if message.from_user.id == ADMIN_ID:
+        await message.answer(
+            f"Xush kelibsiz, Boss (Admin)! Siz uchun maxsus boshqaruv paneli:",
+            reply_markup=admin_menu
+        )
+    else:
+        await message.answer(
+            f"Assalomu alaykum, {message.from_user.first_name}!\n"
+            "Do'konimiz botiga xush kelibsiz. Kerakli bo'limni tanlang:",
+            reply_markup=user_menu
+        )
 
+# --- Admin tugmalari uchun handlerlar ---
+@dp.message(lambda msg: msg.text and "Statistika" in msg.text)
+async def admin_stats(message: types.Message):
+    if message.from_user.id == ADMIN_ID:
+        await message.answer("📊 Bot statistikasi:\n\nJami foydalanuvchilar: Aktiv\nBuyurtmalar holati: Joyida")
+
+@dp.message(lambda msg: msg.text and "Mahsulot qo'shish" in msg.text)
+async def admin_add_product(message: types.Message):
+    if message.from_user.id == ADMIN_ID:
+        await message.answer("➕ Yangi mahsulot qo'shish bo'limi (Bu yerga mahsulot qo'shish logikasini ulaymiz).")
+
+@dp.message(lambda msg: msg.text and "Xabarnoma yuborish" in msg.text)
+async def admin_broadcast(message: types.Message):
+    if message.from_user.id == ADMIN_ID:
+        await message.answer("📢 Barcha mijozlarga yuboriladigan xabar matnini kiriting:")
+
+@dp.message(lambda msg: msg.text and "Sozlamalar" in msg.text)
+async def admin_settings(message: types.Message):
+    if message.from_user.id == ADMIN_ID:
+        await message.answer("⚙️ Admin sozlamalari menyusi.")
+
+# --- Mijoz menyusi handlerlari ---
 @dp.message(lambda msg: msg.text and "Katalog" in msg.text)
 async def catalog_handler(message: types.Message):
     print(f"DEBUG: {message.from_user.first_name} Katalog bosdi!")
