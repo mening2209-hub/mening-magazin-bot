@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.types import (
@@ -9,13 +10,13 @@ from aiogram.types import (
     InlineKeyboardButton
 )
 
-# BotFather tokeningiz
-TOKEN = "9018567371:AAGPOC3MkADKF7-ejo4IlIVDGhocji_jOEc"
+# BotFather tokeni (Render yoki to'g'ridan-to'g'ri)
+TOKEN = os.getenv("TELEGRAM_TOKEN", "9018567371:AAGPOC3MkADKF7-ejo4IlIVDGhocji_jOEc")
 
 # Sizning Telegram ID raqamingiz (Admin)
 ADMIN_ID = 8788801606
 ADMIN_USERNAME = "@sizning_usernameingiz"  # Admin useri
-ADMIN_PHONE = "+998901234567"            # Admin telefoni
+ADMIN_PHONE = "+998901234567"             # Admin telefoni
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -57,16 +58,14 @@ async def start_cmd(message: types.Message):
 # --- Mijoz menyusi: Katalog (Uzum uslubida rasmli) ---
 @dp.message(F.text == "🛍 Mahsulotlar katalogi")
 async def catalog_handler(message: types.Message):
-    # Mahsulot 1 uchun inline tugmalar (Savatchaga qo'shish)
     kb_product1 = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="🛒 Savatchaga qo'shish", callback_data="add_to_cart_1")]
         ]
     )
     
-    # Namuna sifatida rasm bilan mahsulot yuborish (o'zingizning rasm havolangizni qo'yishingiz mumkin)
     await message.answer_photo(
-        photo="https://images.unsplash.com/photo-1542291026-7eec264c27ff", # Misol uchun krossovka rasmi
+        photo="https://images.unsplash.com/photo-1542291026-7eec264c27ff",
         caption=(
             "👟 **Nike Air Max Krossovka**\n\n"
             "💰 Narxi: 250 000 so'm\n"
@@ -79,7 +78,6 @@ async def catalog_handler(message: types.Message):
 # --- Savatchaga qo'shish tugmasi bosilganda ---
 @dp.callback_query(F.data == "add_to_cart_1")
 async def add_to_cart_callback(callback: types.CallbackQuery):
-    # Bu yerda oddiy savatchaga saqlash logikasi ishlaydi
     kb_checkout = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="🚀 Buyurtma berishga o'tish", callback_data="start_order")]
@@ -97,7 +95,6 @@ async def add_to_cart_callback(callback: types.CallbackQuery):
 async def checkout_handler(event: types.Message | types.CallbackQuery):
     message = event.message if isinstance(event, types.CallbackQuery) else event
     
-    # Telefon raqamni so'rash uchun maxsus tugma
     phone_keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="📞 Telefon raqamni yuborish", request_contact=True)]
@@ -119,7 +116,6 @@ async def checkout_handler(event: types.Message | types.CallbackQuery):
 async def contact_received(message: types.Message):
     phone = message.contact.phone_number
     
-    # Lokatsiyani so'rash uchun tugma
     location_keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="📍 Lokatsiyani yuborish", request_location=True)]
@@ -134,7 +130,6 @@ async def contact_received(message: types.Message):
         reply_markup=location_keyboard,
         parse_mode="Markdown"
     )
-    # Bu yerda raqamni vaqtinchalik xotirada saqlab turishingiz mumkin
 
 # --- Lokatsiya qabul qilinganda buyurtma Adminga boradi ---
 @dp.message(F.location)
@@ -153,12 +148,9 @@ async def location_received(message: types.Message):
     )
     
     try:
-        # Adminga matnli xabar yuborish
         await bot.send_message(chat_id=ADMIN_ID, text=admin_text, parse_mode="Markdown")
-        # Adminga xaritadagi lokatsiyani yuborish
         await bot.send_location(chat_id=ADMIN_ID, latitude=lat, longitude=lon)
         
-        # Mijozga tasdiqlash xabari
         await message.answer(
             "✅ Buyurtmangiz muvaffaqiyatli qabul qilindi!\n"
             "Tez orada operatorimiz siz bilan bog'lanadi.",
@@ -167,7 +159,7 @@ async def location_received(message: types.Message):
     except Exception as e:
         await message.answer(f"❌ Xatolik yuz berdi: {e}", reply_markup=client_menu)
 
-# --- Biz bilan aloqa (Admin haqida ma'lumot) ---
+# --- Biz bilan aloqa va ma'lumot ---
 @dp.message(F.text == "📞 Biz bilan aloqa")
 async def contact_admin_handler(message: types.Message):
     await message.answer(
@@ -205,6 +197,8 @@ async def admin_settings(message: types.Message):
 
 async def main():
     logging.basicConfig(level=logging.INFO)
+    # Eski/qolib ketgan so'rovlarni va konfliktni tozalash uchun muhim qator:
+    await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
