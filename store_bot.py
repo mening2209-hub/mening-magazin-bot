@@ -11,7 +11,7 @@ from aiogram.types import (
 )
 
 # BotFather tokeni (Render yoki to'g'ridan-to'g'ri)
-TOKEN = os.getenv("TELEGRAM_TOKEN", "9018567371:AAGPOC3MkADKF7-ejo4IlIVDGhocji_jOEc")
+TOKEN = os.getenv("9018567371:AAHo87gud3q80sA-abrRVE8EMnsv5wwNNPw")
 
 # Sizning Telegram ID raqamingiz (Admin)
 ADMIN_ID = 8788801606
