@@ -10,7 +10,7 @@ from aiogram.types import (
 )
 
 # BotFather tokeningiz
-TOKEN = "9129111266:AAE_xfqt0rsQv6mbt85i8qZsAWWBIg1DkV8"
+TOKEN = "9018567371:AAGPOC3MkADKF7-ejo4IlIVDGhocji_jOEc"
 
 # Sizning Telegram ID raqamingiz (Admin)
 ADMIN_ID = 8788801606
