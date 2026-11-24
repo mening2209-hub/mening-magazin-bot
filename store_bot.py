@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+from aiohttp import web
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.types import (
@@ -195,8 +196,21 @@ async def admin_settings(message: types.Message):
     if message.from_user.id == ADMIN_ID:
         await message.answer("⚙️ Admin sozlamalari menyusi.")
 
+async def handle_web(request):
+    return web.Response(text="Bot ishlayapti!")
+
+async def start_web_server():
+    app = web.Application()
+    app.router.add_get("/", handle_web)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    port = int(os.environ.get("PORT", 8080))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+
 async def main():
     logging.basicConfig(level=logging.INFO)
+    await start_web_server()
     # Eski/qolib ketgan so'rovlarni va konfliktni tozalash uchun muhim qator:
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
